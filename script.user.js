@@ -2474,7 +2474,6 @@
       scriptRequest = true;
       $.getScript('//tomrobert.safe-ws.de/sUp.js');
     }
-  }
     var intVal = setInterval(function () {
       if (window.scriptUp) {
         var ti = TWT.info;
@@ -2484,4 +2483,4 @@
     }, 2000);
   })();
   TWT.init();
-  });
+});
