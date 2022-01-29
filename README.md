@@ -53,8 +53,8 @@ This is an updated version of [TW-Collections](//greasyfork.org/scripts/1670) ma
 Install first the browser extension for your browser:
 * ![](//imgur.com/UTxgUkJ.jpg) Firefox: [Greasemonkey](//addons.mozilla.org/firefox/addon/greasemonkey/)
 * ![](//imgur.com/KSoOXLJ.png) Chrome: [Tampermonkey](//chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo/)
-* ![](//imgur.com/QbACShJ.png) Microsoft Edge: [Tampermonkey](//www.microsoft.com/store/p/tampermonkey/9nblggh5162s/)
-* ![](//imgur.com/S6GHleD.png) Safari: [Tampermonkey](//safari.tampermonkey.net/tampermonkey.safariextz)
+* ![](//imgur.com/QbACShJ.png) Microsoft Edge: [Tampermonkey](//microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd)
+* ![](//imgur.com/S6GHleD.png) Safari: [Tampermonkey](//www.tampermonkey.net/?browser=safari)
 * ![](//imgur.com/sDowwI7.jpg) Opera: [Tampermonkey](//addons.opera.com/extensions/details/tampermonkey-beta/)
 
 Now install the user script.
