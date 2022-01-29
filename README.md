@@ -22,28 +22,28 @@ This is an updated version of [TW-Collections](//greasyfork.org/scripts/1670) ma
 
 ## Features & Screenshots
 **List of items needed for collections:**  
-![](//i.imgur.com/wh1lkei.png)
+![](https://imgur.com/wh1lkei.png)
 
 **Display the missing items to the collections on the market:**  
-![](//i.imgur.com/vIOM9VV.png)
+![](https://imgur.com/vIOM9VV.png)
 
 **Bank fees on mouseover:**  
-![](//i.imgur.com/KSOsxie.png)
+![](https://imgur.com/KSOsxie.png)
 
 **Only search for missing items on the market [TW-DB.info clothcalc](//tw-db.info/?strana=userscript) is needed):**  
-![](//i.imgur.com/j9oajhA.png)
+![](https://imgur.com/j9oajhA.png)
 
 **Various Shortcuts:**  
-![](//i.imgur.com/nBeZKWt.png)
+![](https://imgur.com/nBeZKWt.png)
 
 **Additional buttons in inventory:**  
-![](//i.imgur.com/3JyzL5V.png)
+![](https://imgur.com/3JyzL5V.png)
 
 **Remove all reports:**  
-![](//i.imgur.com/DQH5arj.png)
+![](https://imgur.com/DQH5arj.png)
 
 **Logout Button:**  
-![](//i.imgur.com/iNH5xqT.png)
+![](https://imgur.com/iNH5xqT.png)
 
 ## Comments
 *Official Forum topic:*  
@@ -51,15 +51,15 @@ This is an updated version of [TW-Collections](//greasyfork.org/scripts/1670) ma
 
 ## Installation
 Install first the browser extension for your browser:
-* ![](//imgur.com/UTxgUkJ.jpg) Firefox: [Greasemonkey](//addons.mozilla.org/firefox/addon/greasemonkey/)
-* ![](//imgur.com/KSoOXLJ.png) Chrome: [Tampermonkey](//chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo/)
-* ![](//imgur.com/QbACShJ.png) Microsoft Edge: [Tampermonkey](//microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd)
-* ![](//imgur.com/S6GHleD.png) Safari: [Tampermonkey](//www.tampermonkey.net/?browser=safari)
-* ![](//imgur.com/sDowwI7.jpg) Opera: [Tampermonkey](//addons.opera.com/extensions/details/tampermonkey-beta/)
+* ![](https://imgur.com/UTxgUkJ.jpg) Firefox: [Greasemonkey](//addons.mozilla.org/firefox/addon/greasemonkey/)
+* ![](https://imgur.com/KSoOXLJ.png) Chrome: [Tampermonkey](//chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo/)
+* ![](https://imgur.com/QbACShJ.png) Microsoft Edge: [Tampermonkey](//microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd)
+* ![](https://imgur.com/S6GHleD.png) Safari: [Tampermonkey](//www.tampermonkey.net/?browser=safari)
+* ![](https://imgur.com/sDowwI7.jpg) Opera: [Tampermonkey](//addons.opera.com/extensions/details/tampermonkey-beta/)
 
 Now install the user script.
 
-![](//imgur.com/lvfODGq.jpg)**Smartphones & Tablets**
+![](https://imgur.com/lvfODGq.jpg)**Smartphones & Tablets**
 * Create a new bookmark in your mobile browser
 * Edit the bookmark and copy this to its address field:
 
