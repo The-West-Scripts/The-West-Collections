@@ -50,16 +50,12 @@ This is an updated version of [TW-Collections](//greasyfork.org/scripts/1670) ma
 [Link](//forum.the-west.net/index.php?threads/tw-collections.54041)
 
 ## Installation
-Install first the browser extension for your browser:
-* ![](https://imgur.com/UTxgUkJ.jpg) Firefox: [Greasemonkey](//addons.mozilla.org/firefox/addon/greasemonkey/)
-* ![](https://imgur.com/KSoOXLJ.png) Chrome: [Tampermonkey](//chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo/)
-* ![](https://imgur.com/QbACShJ.png) Microsoft Edge: [Tampermonkey](//microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd)
-* ![](https://imgur.com/S6GHleD.png) Safari: [Tampermonkey](//www.tampermonkey.net/?browser=safari)
-* ![](https://imgur.com/sDowwI7.jpg) Opera: [Tampermonkey](//addons.opera.com/extensions/details/tampermonkey-beta/)
+![](https://imgur.com/UTxgUkJ.jpg) ![](https://imgur.com/KSoOXLJ.png) ![](https://imgur.com/QbACShJ.png) ![](https://imgur.com/S6GHleD.png) ![](https://imgur.com/sDowwI7.jpg) **PC**
+* Install first one of these extensions for your browser:  
+[Tampermonkey](https://www.tampermonkey.net/) / [Violentmonkey](https://violentmonkey.github.io/#installation)
+* Now install the user script.
 
-Now install the user script.
-
-![](https://imgur.com/lvfODGq.jpg)**Smartphones & Tablets**
+![](https://imgur.com/lvfODGq.jpg) **Smartphones & Tablets**
 * Create a new bookmark in your mobile browser
 * Edit the bookmark and copy this to its address field:
 
