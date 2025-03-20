@@ -5,9 +5,11 @@
 // @include     https://*.the-west.*/game.php*
 // @exclude     https://classic.the-west.net*
 // @author      Dun (updated by Tom Robert)
-// @version     1.4.6.6
-// @history 1.4.6.5 Bugfix, TW v2.97
-// @history 1.4.6.4 Bugfixes by Tom Robert, TW v2.80
+// @version     1.4.6.9
+// @history 1.4.6.9 bankfees removed, old updater removed, item sets selectbox improved, bugfixes, TW v2.241
+// @history 1.4.6.8 greasyfork fix
+// @history 1.4.6.5 bugfix, TW v2.97
+// @history 1.4.6.4 bugfixes by Tom Robert, TW v2.80
 // @history 1.4.6.3 rev. TW 2.29
 // @history 1.4.6.2 rev. TW 2.26
 // @history 1.4.6.1 rev. TW 2.24
@@ -71,7 +73,7 @@
     info: {
       name: 'TW-Collections',
       lang: 'en',
-      version: '1.4.6.6',
+      version: '1.4.6.9',
       min_gameversion: '2.0',
       max_gameversion: Game.version.toString(),
       idscript: '1670',
@@ -97,8 +99,8 @@
     },
     menu_callback: {
       goHome: "TaskQueue.add(new TaskWalk(Character.homeTown.town_id,'town'))",
-      goToDaily1: 'Map.center(1920, 2176);',
-      goToDaily2: 'Map.center(28288,16768);',
+      goToDaily1: 'GameMap.center(1920, 2176);',
+      goToDaily2: 'GameMap.center(28288,16768);',
       ownSaloon: 'SaloonWindow.open(Character.homeTown.town_id);',
       openMarket: 'MarketWindow.open(Character.homeTown.town_id);',
       mobileTrader: "west.window.shop.open().showCategory('trader');",
@@ -166,7 +168,7 @@
     },
     langs: {
       fr: {
-        description: "<center><br><b>TW Collections</b><br>Astuces et signalement des items manquants des collections<br>Liste des items manquants des collections<br>Frais bancaires en survol avant dépot<br>Divers raccourcis et fonctions<br> Suppressions des rapports<br>Doublons dans l'inventaire<br>etc...</center>",
+        description: "<center><br><b>TW Collections</b><br>Astuces et signalement des items manquants des collections<br>Liste des items manquants des collections<br>Divers raccourcis et fonctions<br> Suppressions des rapports<br>Doublons dans l'inventaire<br>etc...</center>",
         Options: {
           tab: {
             setting: 'Réglages'
@@ -294,9 +296,6 @@
             error: 'Erreur'
           }
         },
-        fees: {
-          tipText: 'Frais &aacute; %1%: $%2'
-        },
         twdbadds: {
           buyFilterTip: 'Montrer seulement les items manquants',
           buyFilterLabel: 'Items manquants'
@@ -328,7 +327,7 @@
         }
       },
       en: {
-        description: "<center><br><b>TW-Collections</b><br>Tips and reporting missing items collections <br>list of collection needed items<br>Bank fees on mouseover<br>Various shortcuts" + "<br>All reports deletion<br>Additional buttons in inventory (duplicates,useables, recipes, sets)<br>etc ...",
+        description: "<center><br><b>TW-Collections</b><br>Tips and reporting missing items collections <br>list of collection needed items<br>Various shortcuts" + "<br>All reports deletion<br>Additional buttons in inventory (duplicates,useables, recipes, sets)<br>etc ...",
         Options: {
           tab: {
             setting: 'Settings'
@@ -438,14 +437,14 @@
           title: 'Logout'
         },
         AllReportsDelete: {
-          button: 'Suppress all',
-          title: 'Suppress all reports',
+          button: 'Delete all reports',
+          title: 'Delete all reports',
           work: 'Job',
           progress: 'Progress',
           userConfirm: 'User Confirm',
           loadPage: 'Load Page',
           deleteReports: 'Delete reports',
-          confirmText: 'Supress all reports - Are you sure ?',
+          confirmText: 'Delete all reports - Are you sure?',
           deleteYes: 'Yes, delete',
           deleteNo: 'No, don\'t delete',
           status: {
@@ -455,9 +454,6 @@
             fail: 'Error',
             error: 'Error'
           }
-        },
-        fees: {
-          tipText: '%1% Fees: $%2'
         },
         twdbadds: {
           buyFilterTip: 'Show only missing items',
@@ -502,8 +498,7 @@
         }
       } catch (ex) {
         detected_lang = TWT.info.lang;
-      }
-      finally {
+      } finally {
         var langue = TWT.langs[detected_lang];
         if (!isDefined(langue)) {
           langue = TWT.langs[TWT.info.lang];
@@ -656,15 +651,16 @@
         $.each(TWT.LANG.Options.checkbox_text, function (ind1, val) {
           TWT.Settings.checked[ind1] = [];
           $.each(TWT.LANG.Options.checkbox_text[ind1].options, function (ind2, detail) {
-            var attended;
-            /* if (TWT.MetaCol.finished && (ind1 == 'collection' || ind2 == 'listNeeded')) { Desactivation des options de collections si elles sont terminées attended = '0'; } else {*/
-            attended = TWT.scriptStorage.getItem('TWT.Cache.' + ind1 + '.' + ind2);
+            if (['showFees'].includes(ind2))
+              return 1;
+            var attended = TWT.scriptStorage.getItem('TWT.Cache.' + ind1 + '.' + ind2);
             if (!isDefined(attended)) {
-              if (ind2 == 'lang') {
+              if (ind2 == 'lang')
                 attended = TWT.info.lang;
-              } else {
+              else if (['logout', 'deleteAllReports'].includes(ind2))
+                attended = 0;
+              else
                 attended = '1';
-              }
               TWT.scriptStorage.setItem('TWT.Cache.' + ind1 + '.' + ind2, attended);
             }
             TWT.Settings.checked[ind1][ind2] = attended;
@@ -712,7 +708,6 @@
           TWT.Inventaire.detach();
         }
         TWT.CraftHandler.initListener();
-        TWT.BankFees.initListener();
         TWT.AllReportsDelete.initListener();
         if (TWT.Settings.isChecked('craft.filterMarket')) {
           TWT.CraftHandler.init();
@@ -735,9 +730,6 @@
             TWT.CollectionsHandler.inject();
             TWT.CollectionsHandler.attachFilter();
           }
-        }
-        if (TWT.Settings.isChecked('miscellaneous.showFees')) {
-          TWT.BankFees.attach();
         }
         if (TWT.Settings.isChecked('miscellaneous.deleteAllReports')) {
           TWT.AllReportsDelete.addStyle();
@@ -780,10 +772,9 @@
           TWT.Options.Windows.setTitle(TWT.LANG.Options.tab.setting);
           var save_button = new west.gui.Button(TWT.LANG.Options.saveButton, TWT.Options.save);
           var l0 = TWT.Options.createLanguage();
-          /*var l01 = TWT.Options.createMAJ();*/
           var l1 = TWT.Options.getContent();
           var l2 = $('<div style="text-align:center;">').append(save_button.getMainDiv());
-          TWT.Options.Windows.appendToContentPane($('<div id="divopts" style="font-weight: bolder;width: 683px;left:10px;" class="daily_activity-list">').append(l0, /*l01,*/ l1, l2));
+          TWT.Options.Windows.appendToContentPane($('<div id="divopts" style="font-weight: bolder;width: 683px;left:10px;" class="daily_activity-list">').append(l0, l1, l2));
           $("#divopts", TWT.Options.Windows.getMainDiv()).css("width: 674px;");
           TWT.Options.Windows.appendToContentPane(TWT.getDunMp());
           $(".fancytable div.trows div.tbody").css({
@@ -796,7 +787,7 @@
         $.each(TWT.LANG.Options.checkbox_text, function (key) {
           var table = new west.gui.Table(true).setId('paramtwt_table_' + key).createEmptyMessage('! No Parameters !').addColumn("settings_" + key).appendToThCell("head", "settings_" + key, TWT.LANG.Options.checkbox_text[key].title, "<span style='font-size:12pt;padding-left:25px;'>" + TWT.LANG.Options.checkbox_text[key].title + "</span>");
           $.each(TWT.LANG.Options.checkbox_text[key].options, function (i) {
-            if (i != 'lang') {
+            if (!['lang', 'showFees'].includes(i)) {
               var checkB;
               if ((TWT.MetaCol.finished && (key == 'collection' || i == 'listNeeded')) || ((key == 'twdbadds') && !TWT.isTWDBHere)) {
                 checkB = $("<span title='" + TWT.LANG.Options.message.indispo + "' style='color: #808080;font-style: italic;font-size:11pt;padding-left:10px;'>").append(TWT.LANG.Options.checkbox_text[key].options[i]);
@@ -823,26 +814,6 @@
         TWT.Options.lang_box.select(TWT.Settings.getValue('miscellaneous.lang'));
         var more_button = new west.gui.Button(TWT.LANG.Options.message.more, TWT.Options.translate.open, this, this, TWT.LANG.Options.message.moreTip);
         return $("<span>").append(TWT.LANG.Options.checkbox_text.miscellaneous.options.lang + " : ").append(TWT.Options.lang_box.getMainDiv()).append(more_button.getMainDiv());
-      },
-      createMAJ: function () {
-        TWT.Options.maj_box = new west.gui.Combobox();
-        TWT.Options.maj_box.addItem(0, TWT.LANG.Options.update.updnever);
-        /* TWT.Options.maj_box.addItem(3600000,"every hour"); TWT.Options.maj_box.addItem(21600000,"every 6 hours");*/
-        TWT.Options.maj_box.addItem(86400000, TWT.LANG.Options.update.upddaily);
-        TWT.Options.maj_box.addItem(604800000, TWT.LANG.Options.update.updweek);
-        TWT.Options.maj_box.select(ScriptUpdater.getInterval());
-        var maj_button = $('<span title="' + TWT.LANG.Options.update.checknow + '" style="background-color: transparent; background-attachment: scroll; background-clip: border-box;' + 'background-image: url(images/interface/character/menuicons.jpg); background-position: 0px -250px; ' + 'cursor: pointer;  position: absolute; height: 25px; width: 25px; margin: 4px;">');
-        maj_button.click(function (e) {
-          TWT.Options.Windows.showLoader();
-          EventHandler.listen("scriptmaj.ok", function () {
-            new UserMessage(TWT.LANG.Options.update.updok, UserMessage.TYPE_SUCCESS).show();
-            return EventHandler.ONE_TIME_EVENT;
-          });
-          ScriptUpdater.forceCheck(TWT.info.idscript, TWT.info.version);
-          TWT.Options.Windows.hideLoader();
-        });
-        TWT.Options.maj_box.select(ScriptUpdater.getInterval());
-        return $("<span style='text-align:left;'>").append("&nbsp;" + TWT.LANG.Options.update.title + " :  ", TWT.Options.maj_box.getMainDiv(), maj_button);
       },
       save: function () {
         TWT.Options.Windows.showLoader();
@@ -875,13 +846,13 @@
           'title': TWT.LANG.ToolBox.title
         }).css({
           'background-position': '0px -100px'
-        }).mouseleave(function () {
+        }).on('mouseleave', function () {
           $(this).css("background-position", "0px -100px");
         }).click(function (e) {
           TWT.MenuBox.open(e);
         });
         if (TWT.Settings.isChecked('miscellaneous.popupTWT')) {
-          a.mouseenter(function (e) {
+          a.on('mouseenter', function (e) {
             $(this).css("background-position", "-25px -100px");
             TWT.MenuBox.open(e);
           });
@@ -915,7 +886,7 @@
         this.selectbox.addItem(99, TWT.LANG.ToolBox.list.openOptions);
         this.selectbox.show(e);
         this.selectbox.setPosition(e.clientX, e.clientY - 25);
-        $(this.selectbox.elContent).mouseleave(function () {
+        $(this.selectbox.elContent).on('mouseleave', function () {
           that.selectbox.hide();
         });
       }
@@ -935,7 +906,6 @@
           type: 'POST',
           data: {},
           dataType: 'json',
-          async: false,
           success: function (json) {
             if (json.error)
               return new UserMessage(json.msg, UserMessage.TYPE_ERROR).show();
@@ -944,7 +914,7 @@
             for (var i = 0; i < result.length; i++) {
               var item = ItemManager.get(result[i].item_id);
               if (isDefined(item)) {
-                TWT.MetaCol.marketEC[$.trim(item.name)] = result[i];
+                TWT.MetaCol.marketEC[item.name.trim()] = result[i];
               }
             }
           }
@@ -963,7 +933,7 @@
             while (match = rex.exec(value.meta)) {
               var val = match[1];
               var srcI = /<img.*?src="(.*?)"/.exec(val)[1];
-              var ident = $.trim(value.title);
+              var ident = value.title.trim();
               var strManquant = "";
               var name = /<img.*?alt="(.*?)"/.exec(val)[1];
               var shoudBuy = (val.indexOf("locked") > -1);
@@ -1003,9 +973,9 @@
       },
       sort: function (array, key) {
         return array.sort(function (a, b) {
-          var x = a[key];
-          var y = b[key];
-          return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+          a = a[key].trim();
+          b = b[key].trim();
+          return a.localeCompare(b);
         });
       },
       init: function () {
@@ -1025,7 +995,6 @@
               'playerid': Character.playerId
             },
             dataType: 'json',
-            async: false,
             success: function (data_return) {
               var all = eval(data_return);
               if (all.achievements.progress.length > 0 || TWT.Settings.isChecked('collection.gereNewItems')) {
@@ -1045,24 +1014,26 @@
           sets = TWT.MetaCol.sort(sets, "name");
           for (var jj = 0; jj < sets.length; jj++) {
             var set = sets[jj];
-            var items = set.getItems();
-            var detSet = [];
-            var isFriend = false;
+            if (set.key.includes('friendship_set_'))
+              continue;
+            var items = set.getItems(),
+            detSet = [],
+            isFriend = 0;
             for (var zz of items) {
               var item = ItemManager.getByBaseId(zz);
               if (!isDefined(item)) {
                 ErrorLog.log("Erreur sur " + zz + " " + set.name);
               } else {
-                if (item.short.indexOf("friendset_") == -1 && zz != 1008) {
-                  var weared = Wear.carries(zz);
-                  var bagItem = Bag.getItemsIdsByBaseItemId(zz);
+                if (item.short.includes('friendset_') || [1008].includes(zz)) {
+                  isFriend = 1;
+                  break;
+                } else {
+                  var weared = Wear.carries(zz),
+                  bagItem = Bag.getItemsIdsByBaseItemId(zz);
                   if (!weared && !bagItem[0]) {
                     detSet.push(item.name);
                     TWT.MetaCol.setsProgress[item.name] = item.image;
                   }
-                } else {
-                  isFriend = true;
-                  break;
                 }
               }
             }
@@ -1076,7 +1047,7 @@
       isFinished: function (name) {
         if (TWT.MetaCol.finished)
           return true;
-        var item = TWT.MetaCol.inProgress[$.trim(name)];
+        var item = TWT.MetaCol.inProgress[name.trim()];
         if (!isDefined(item)) {
           return true;
         } else if (isDefined(TWT.MetaCol.group[item.group]) && TWT.MetaCol.group[item.group][0] == true) {
@@ -1087,8 +1058,8 @@
           return false;
       },
       shouldBuy: function (name) {
-        var item = TWT.MetaCol.inProgress[$.trim(name)];
-        var marketed = TWT.MetaCol.marketEC[$.trim(name)];
+        var item = TWT.MetaCol.inProgress[name.trim()];
+        var marketed = TWT.MetaCol.marketEC[name.trim()];
         if (isDefined(item) && !isDefined(marketed)) {
           return item.shouldBuy;
         } else {
@@ -1099,7 +1070,7 @@
         try {
           if (TWT.Settings.isChecked('collection.showmiss')) {
             var br = (withbr) ? "<BR>" : " - ";
-            var item = TWT.MetaCol.inProgress[$.trim(name)];
+            var item = TWT.MetaCol.inProgress[name.trim()];
             if (isDefined(item)) {
               var manquants = TWT.MetaCol.group[item.group];
               if (isDefined(manquants) && manquants.length > 0) {
@@ -1120,7 +1091,7 @@
         return "";
       },
       remove: function (arr, name) {
-        name = $.trim(name);
+        name = name.trim();
         var x,
         _i,
         _len,
@@ -1148,19 +1119,18 @@
           group = TWT.MetaCol.group;
         }
         var textinput = new west.gui.Textfield().maxlength(12).setPlaceholder(TWT.LANG.collection.select).setWidth(165);
-        var anchors = new west.gui.Selectbox();
-        anchors.setWidth(200);
-        $(anchors.elContent).css({
+        var anchorz = new west.gui.Selectbox();
+        anchorz.setWidth(200);
+        $(anchorz.elContent).css({
           "max-height": "270px",
           "width": "250px",
-          "overflow-y": 'auto'
+          "white-space": 'nowrap'
         });
-        anchors.addItem(TWT.LANG.collection.allOpt, TWT.LANG.collection.allOpt);
+        anchorz.addItem(TWT.LANG.collection.allOpt, TWT.LANG.collection.allOpt);
         $.each(what, function (ind2, val) {
-          anchors.addItem(val[0], val[0]);
+          anchorz.addItem(val[0], '<div style="overflow:hidden;text-overflow:ellipsis;">' + val[0] + '</div>');
         });
-        anchors.addItem("99999", " ");
-        anchors.addListener(function (e) {
+        anchorz.addListener(function (e) {
           var str = "";
           textinput.setValue(e);
           var arrtmp = {};
@@ -1176,7 +1146,7 @@
           return true;
         });
         textinput.click(function (e) {
-          anchors.show(e);
+          anchorz.show(e);
         });
         return textinput.getMainDiv();
       },
@@ -1195,7 +1165,6 @@
             url: 'game.php?window=shop_trader&mode=index',
             type: 'POST',
             dataType: 'json',
-            async: false,
             success: function (resp) {
               model.setInventory(resp.inventory);
               model.getCategories()['trader'] = west.window.shop.getFactory().createCategory({
@@ -1229,8 +1198,8 @@
           bigTR.css({
             'color': '#113355'
           });
-          bigTR.attr('id', $.trim(valGroup[0]));
-          bigTR.append($('<td>').append($.trim(valGroup[0])));
+          bigTR.attr('id', valGroup[0].trim());
+          bigTR.append($('<td>').append(valGroup[0].trim()));
           divMain.append(bigTR);
           $.each(valGroup[1], function (ind3, val) {
             var tr = $('<tr style="font-weight:bold;font-style:italic;"></tr>');
@@ -1258,7 +1227,7 @@
               });
               span.append("&nbsp;&nbsp;&nbsp;", divTrader);
             }
-            var item = TWT.MetaCol.marketEC[$.trim(val)];
+            var item = TWT.MetaCol.marketEC[val.trim()];
             if (isDefined(item)) {
               var imsell = '';
               var sp = '';
@@ -1424,7 +1393,6 @@
       }
     },
     Injecteur: {
-      divsnif: [],
       methodes: [],
       winTabInjected: [],
       init: function (id, name, callback) {
@@ -1473,31 +1441,6 @@
           }
         }
       },
-      detecteWinOff: function (who) {
-        TWT.Injecteur.winTabInjected[who] = null;
-      },
-      divsniffer: function (who, callback) {
-        if (isDefined(TWT.Injecteur.divsnif[who])) {
-          return false;
-        } else {
-          $('#windows').on('DOMNodeInserted', '.' + who, function (e) {
-            try {
-              var opendiv = e.currentTarget;
-              if (opendiv.attributes['class'].nodeValue.indexOf(who) > -1) {
-                var divBuy = $('div[class="' + who + '"]').contents();
-                callback($(opendiv));
-              }
-            } catch (e) {
-              ErrorLog.log(e);
-            }
-          });
-          TWT.Injecteur.divsnif[who] = 'true';
-        }
-      },
-      divsnifferoff: function (who) {
-        $('#windows').off('DOMNodeInserted', '.' + who);
-        TWT.Injecteur.divsnif[who] = undefined;
-      },
       inject: function (id) {
         try {
           if (isDefined(this.methodes[id]) && !this.methodes[id].attached) {
@@ -1525,7 +1468,7 @@
               TWT.CollectionsHandler.refresh();
             }
             var obj = this.getModel();
-            var name = $.trim(obj.getName());
+            var name = obj.getName().trim();
             var divMain = "<p>";
             /* itemTraderFunction.bind(this)();*/
             item.find(".TWTSuccess").remove();
@@ -1544,7 +1487,7 @@
             if (TWT.MetaCol.dirty) {
               TWT.CollectionsHandler.refresh();
             }
-            var name = $.trim(that.obj.name);
+            var name = that.obj.name.trim();
             that.divMain.find('.TWTSuccessSell').remove();
             if (!TWT.MetaCol.isFinished(name)) {
               that.divMain.append('<img  class="TWTSuccessSell"' + 'style="' + TWT.css.styleT + '" title="' + TWT.LANG.collection.patchsell.title + TWT.MetaCol.getBuyItems(name, true) + '"' + ' src="' + TWT.images.cup + '">');
@@ -1565,7 +1508,7 @@
                 TWT.CollectionsHandler.refresh();
               }
               var divMain = '';
-              if (TWT.MetaCol.shouldBuy($.trim(obj.name))) {
+              if (TWT.MetaCol.shouldBuy(obj.name.trim())) {
                 divMain = '<img  class="TWTSuccess" style="' + TWT.css.style + '" title="' + TWT.LANG.collection.patchsell.title + ' ' + TWT.MetaCol.getBuyItems(obj.name, false) + '"' + ' src="' + TWT.images.cup + '">';
               }
               return divMain;
@@ -1623,7 +1566,7 @@
             if (TWT.MetaCol.dirty) {
               TWT.CollectionsHandler.refresh();
             }
-            var name = $.trim(this.obj.name);
+            var name = this.obj.name.trim();
             this.divMain.find(".TWTSuccess").remove();
             if (TWT.MetaCol.shouldBuy(name)) {
               this.divMain.append('<img  class="TWTSuccess"' + 'style="' + TWT.css.styleT + '" title="' + TWT.LANG.collection.patchsell.title + TWT.MetaCol.getBuyItems(name, true) + '"' + ' src="' + TWT.images.cup + '">');
@@ -1723,22 +1666,18 @@
         EventHandler.listen('collection.filterMarket', function () {
           if (TWT.Settings.isChecked('collection.filterMarket') || TWT.Settings.isChecked('twdbadds.filterBuyMarket')) {
             TWT.Injecteur.addWinTabListen('marketplace', TWT.Market.addCheckBoxMarket, 'buy');
-            /* TWT.Injecteur.divsniffer('marketplace-buy', TWT.Market.addCheckBoxMarket);*/
             TWT.Injecteur.inject('collection.filterMarket');
           } else {
             MarketWindow.Buy.updateCategory = TWT.Injecteur.restore('collection.filterMarket');
-            /* TWT.Injecteur.divsnifferoff('marketplace-buy');' TWT.Injecteur.detecteWinOff('marketplace');*/
 
           }
         });
         EventHandler.listen('twdbadds.filterBuyMarket', function () {
           if (TWT.Settings.isChecked('collection.filterMarket') || TWT.Settings.isChecked('twdbadds.filterBuyMarket')) {
             TWT.Injecteur.addWinTabListen('marketplace', TWT.Market.addCheckBoxMarket, 'buy');
-            /* TWT.Injecteur.divsniffer('marketplace-buy', TWT.Market.addCheckBoxMarket);*/
             TWT.Injecteur.inject('collection.filterMarket');
           } else {
             MarketWindow.Buy.updateCategory = TWT.Injecteur.restore('collection.filterMarket');
-            /* TWT.Injecteur.divsnifferoff('marketplace-buy');*/
           }
         });
       },
@@ -1861,7 +1800,6 @@
       },
       init: function () {
         EventHandler.listen('inventory_dun_changed', TWT.CollectionsHandler.callRefresh);
-        /* if (ItemManager.isLoaded()) { TWT.CollectionsHandler.initInject(); }else{ EventHandler.listen('itemmanager_loaded', function(){ TWT.CollectionsHandler.initInject(); TWT.CollectionsHandler.inject(); }); }}, initInject : function(){*/
         TWT.Injecteur.init('collection.patchmarket', 'MarketWindow.getClearName', TWT.Injecteur.injectedMethods.injectMarket);
         TWT.Injecteur.init('collection.patchsell', 'tw2widget["InventoryItem"].prototype.getMainDiv', TWT.Injecteur.injectedMethods.injectSell);
         TWT.Injecteur.init('collection.patchtbagupdate', 'Bag.updateChanges', TWT.Injecteur.injectedMethods.injectBagUpdate);
@@ -1873,9 +1811,9 @@
         var items = Bag.items_by_id;
         $.each(items, function (ind, val) {
           $.each(val, function (ind2, val2) {
-            if (val2) {
-              var name = $.trim(val2.name);
-              var item = TWT.MetaCol.inProgress[name];
+            if (val2 && val2.name) {
+              var name = val2.name.trim(),
+              item = TWT.MetaCol.inProgress[name];
               if (isDefined(item)) {
                 item.shouldBuy = false;
                 var manquants = TWT.MetaCol.group[item.group];
@@ -2029,7 +1967,7 @@
           $(selSets.elContent).css({
             "max-height": "270px",
             "width": "250px",
-            "overflow-y": 'auto'
+            "white-space": "nowrap"
           });
           TWT.selAdded = [];
           selSets.addItem('setitems', TWT.LANG.collection.allOpt);
@@ -2037,7 +1975,7 @@
             var itemsSet = west.storage.ItemSetManager.get(item.obj.set);
             if (!isDefined(TWT.selAdded[itemsSet.name])) {
               TWT.selAdded[itemsSet.name] = true;
-              selSets.addItem(itemsSet.name, itemsSet.name);
+              selSets.addItem(itemsSet.name, '<div style="overflow:hidden;text-overflow:ellipsis;">' + itemsSet.name + '</div>');
             }
           });
           selSets.addListener(function (e) {
@@ -2113,9 +2051,9 @@
           'title': TWT.LANG.Logout.title
         }).css({
           'background-image': 'url(' + TWT.images.logout + ')'
-        }).mouseenter(function () {
+        }).on('mouseenter', function () {
           $(this).css("background-position", "-25px 0px");
-        }).mouseleave(function () {
+        }).on('mouseleave', function () {
           $(this).css("background-position", "0px 0px");
         }).click(function () {
           TWT.Logout.logout();
@@ -2126,53 +2064,6 @@
       },
       logout: function () {
         $(window.location).attr('href', 'game.php?window=logout&action=logout&h=' + Player.h);
-      }
-    },
-    BankFees: {
-      attach: function () {
-        TWT.Injecteur.divsniffer('wood-footer', TWT.BankFees.init);
-        /* TWT.Injecteur.addWinTabListen(/^bank-\d+/,TWT.BankFees.init,'balance');*/
-      },
-      detach: function () {
-        TWT.Injecteur.divsnifferoff('wood-footer');
-        /* TWT.Injecteur.detecteWinOff(/^bank-\d+/);*/
-      },
-      initListener: function () {
-        EventHandler.listen('miscellaneous.showFees', function () {
-          if (TWT.Settings.isChecked('miscellaneous.showFees')) {
-            TWT.BankFees.attach();
-          } else {
-            TWT.BankFees.detach();
-          }
-        });
-      },
-      calcFrais: function (montant, taux) {
-        tauxPourc = Number(taux.replace(/% ?/g, ""));
-        var fraisArrondi = Math.ceil((montant * tauxPourc) / 100);
-        var txtFrais = TWT.LANG.fees.tipText.replace('%1', tauxPourc).replace('%2', fraisArrondi);
-        return txtFrais;
-      },
-      init: function (e) {
-        var depotLink = $('.wood-footer:first .deposit');
-        if (depotLink && (!depotLink.attr('id'))) {
-          var frais = $('div.town_data_value div.bank-fee').text();
-          var numFrais = 1 + 0.01 * Number(frais.replace(/% ?/g, ""));
-          depotLink.attr('id', 'depo_changed');
-          var balance = $('.wood-footer:first #tb_balance_input_' + BankWindow.townid);
-          var that = this;
-          balance.mouseover(function () {
-            var fraisArrondi = Math.ceil((balance.val() - balance.val() / numFrais));
-            var txtFrais = TWT.BankFees.calcFrais(balance.val(), frais);
-            balance.attr('title', txtFrais);
-          });
-          var amount = $('#amount');
-          if (amount) {
-            amount.mouseover(function () {
-              var txtFrais = TWT.BankFees.calcFrais(amount.val(), BankWindow.Transfer.fee.toString());
-              amount.attr('title', txtFrais);
-            });
-          }
-        }
       }
     },
     AllReportsDelete: {
@@ -2226,6 +2117,7 @@
       progress_page: 1,
       delete_all: function () {
         var that = this;
+        that.progress_page = 1;
         for (var i = 0; i < MessagesWindow.Report.pageCount; i++) {
           $('#sppage').html('<p>Page ' + that.progress_page + '/' + MessagesWindow.Report.pageCount + '</p>');
           $.ajax({
@@ -2236,7 +2128,6 @@
               'page': that.progress_page
             },
             dataType: 'json',
-            async: false,
             success: function (data_return) {
               for (var j = 0; j < data_return.reports.length; j++) {
                 that.reports_id.push(data_return.reports[j].report_id);
@@ -2253,7 +2144,6 @@
             'reports': TWT.AllReportsDelete.reports_id.join(", ")
           },
           dataType: 'json',
-          async: false,
           success: function (data_return) {
             if (data_return.error)
               that.status_close = false;
@@ -2281,129 +2171,6 @@
         TWT.Options.open('translate');
       }, this, this, "Open the Translation tips page");
       TWApi.setGui($("<div id='twtApiContent' style=' font-family: comic sans ms;font-size: 12pt;padding-top: 10px;text-align: right;'>" + TWT.LANG.description + "</div>").append(set_button.getMainDiv()).append(more_button.getMainDiv()).after(TWT.getDunMp()));
-    }
-  };
-  ScriptUpdater = {
-    id: null,
-    version: null,
-    scriptId: null,
-    scriptCurrentVersion: null,
-    scriptCallbackFunction: null,
-    scriptStorage: null,
-    initialize: function (scriptId, scriptCurrentVersion, scriptCallbackFunction, scriptUseNotice, scriptForceNotice) {
-      ScriptUpdater.scriptId = scriptId;
-      ScriptUpdater.scriptCurrentVersion = scriptCurrentVersion;
-      if (ScriptUpdater.scriptStorage == null) {
-        ScriptUpdater.scriptStorage = new Storage("local", "ScriptUpdater." + scriptId);
-      }
-    },
-    setValue: function (key, value) {
-      if (ScriptUpdater.scriptStorage == null) {
-        ScriptUpdater.scriptStorage = new Storage("local", "ScriptUpdater." + scriptId);
-      }
-      ScriptUpdater.scriptStorage.setItem(key, value);
-    },
-    getValue: function (key, defaultValue) {
-      if (ScriptUpdater.scriptStorage != null) {
-        return ScriptUpdater.scriptStorage.getItem(key, defaultValue);
-      } else {
-        return defaultValue;
-      }
-    },
-    checkLanguages: function () {
-      try {
-        var strLang = "";
-        $.each(TWT.languages, function (ind, language) {
-          if (isDefined(language.script)) {
-            if (TWT.isGreasyLang(language)) {
-              if (language.version < ScriptUpdater.scrnv[language.script]) {
-                strLang += '<br><a href="//greasyfork.org/scripts/' + language.script + '/code.user.js">' + language.name + '</a>';
-              }
-            }
-          }
-        });
-        if (strLang.length > 0) {
-          ScriptUpdater.scrnv.isAJ = false;
-          var parent = new west.gui.Dialog(TWT.LANG.Options.update.title, "<div><br>" + TWT.LANG.Options.update.updlangmaj + "<br><center>" + strLang + "</center></div>").setIcon(west.gui.Dialog.SYS_INFORMATION).setModal(true, false, {
-            bg: "images/curtain_bg.png",
-            opacity: 0.7
-          }).addButton('TW Collection page', function () {
-            parent.hide();
-            window.open("//greasyfork.org/scripts/" + ScriptUpdater.scriptId, '_blank');
-          }).addButton('Close');
-          parent.show();
-        }
-      } catch (e) {
-        new UserMessage(TWT.LANG.Options.update.upderror, UserMessage.TYPE_ERROR).show();
-        ErrorLog.log('Update error', e);
-      }
-    },
-    checkRemoteScript: function () {
-      try {
-        if (TWT.DEBUG) {
-          ScriptUpdater.scrnv = {
-            news: '<h4 style="margin-bottom:20px;">News : </h4>' + "Debug d'affichage des mises a jour<BR><BR>"
-          };
-        }
-        var gocheck = function () {
-          ScriptUpdater.scrnv.isAJ = false;
-          if (ScriptUpdater.scriptCurrentVersion < ScriptUpdater.scrnv[ScriptUpdater.scriptId]) {
-            var strNew = ScriptUpdater.scrnv.news || '';
-            var parent = new west.gui.Dialog(TWT.LANG.Options.update.title, "<div style='" + ((strNew.length > 0) ? "width:650px;height:250px;" : "") + "font-size:16px;text-align:justify;'><BR>" + TWT.LANG.Options.update.updscript + "<div id='boxnews' style='margin-top:20px;font-size:14px;font-style: italic;'>" + strNew + "</div></div>").setIcon(west.gui.Dialog.SYS_QUESTION).setModal(true, false, {
-              bg: "images/curtain_bg.png",
-              opacity: 0.7
-            }).addButton('yes', function () {
-              parent.hide();
-              window.open("//greasyfork.org/scripts/" + ScriptUpdater.scriptId + "/code.user.js", '_self');
-            }).addButton('no', function () {
-              parent.hide();
-            }).addButton('Script page', function () {
-              parent.hide();
-              window.open("//greasyfork.org/scripts/" + ScriptUpdater.scriptId, '_blank');
-            });
-            parent.show();
-          } else {
-            ScriptUpdater.scrnv.isAJ = true;
-          }
-          ScriptUpdater.checkLanguages();
-          var date = new Date();
-          ScriptUpdater.setValue("lastCheck", parseInt(date.getTime()));
-          if (ScriptUpdater.scrnv.isAJ) {
-            EventHandler.signal("scriptmaj.ok");
-          }
-        };
-        if (TWT.DEBUG) {
-          gocheck();
-        } else {
-          ScriptUpdater.scrnv = [];
-        }
-      } catch (e) {
-        new UserMessage(TWT.LANG.Options.update.upderror, UserMessage.TYPE_ERROR).show();
-        ErrorLog.log('Update error', e);
-      }
-    },
-    getLastCheck: function () {
-      return ScriptUpdater.getValue("lastCheck", 0);
-    },
-    getInterval: function () {
-      var interval = ScriptUpdater.getValue("interval", 0);
-      return (typeof(interval) == "undefined" || !interval.toString().match(/^\d+$/)) ? 0 : parseInt(interval.toString());
-    },
-    setInterval: function (interval) {
-      ScriptUpdater.setValue("interval", parseInt(interval));
-    },
-    check: function (scriptId, scriptVersion, scriptCallbackFunction) {
-      ScriptUpdater.initialize(scriptId, scriptVersion, scriptCallbackFunction, true, false);
-      var date = new Date();
-      if (ScriptUpdater.getInterval() > 1) {
-        if ((date.getTime() - ScriptUpdater.getLastCheck()) > ScriptUpdater.getInterval()) {
-          ScriptUpdater.checkRemoteScript();
-        }
-      }
-    },
-    forceCheck: function (scriptId, scriptVersion, scriptCallbackFunction) {
-      ScriptUpdater.initialize(scriptId, scriptVersion, scriptCallbackFunction, true, false);
-      ScriptUpdater.checkRemoteScript();
     }
   };
   /***************************************************************
@@ -2477,7 +2244,7 @@
     var intVal = setInterval(function () {
       if (window.scriptUp) {
         var ti = TWT.info;
-        scriptUp.c('TWT', ti.version, ti.name, ti.website + '/code.user.js', '', ti.lang);
+        scriptUp.c('TWT', ti.version, ti.name, '', ti.website, ti.lang);
         clearInterval(intVal);
       }
     }, 2000);
