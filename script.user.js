@@ -5,7 +5,9 @@
 // @include     https://*.the-west.*/game.php*
 // @exclude     https://classic.the-west.net*
 // @author      Dun (updated by Tom Robert)
-// @version     1.4.6.9
+// @version     1.4.7
+// @homepage https://github.com/The-West-Scripts/The-West-Collections
+// @supportURL https://github.com/The-West-Scripts/The-West-Collections/issues
 // @history 1.4.6.9 bankfees removed, old updater removed, item sets selectbox improved, bugfixes, TW v2.241
 // @history 1.4.6.8 greasyfork fix
 // @history 1.4.6.5 bugfix, TW v2.97
@@ -73,11 +75,11 @@
     info: {
       name: 'TW-Collections',
       lang: 'en',
-      version: '1.4.6.9',
+      version: '1.4.7',
       min_gameversion: '2.0',
       max_gameversion: Game.version.toString(),
       idscript: '1670',
-      website: 'https://greasyfork.org/scripts/7258'
+      website: 'https://the-west-scripts.github.io/The-West-Collections',
     },
     languages: [{
         short_name: 'fr',
@@ -406,7 +408,7 @@
             updnever: 'Never',
             checknow: 'Check update now ?',
             updok: "The TW Collection's script is up to date",
-            updlangmaj: 'An update is available for one or more languages ​​of the TW Collections script.<BR>Clic on the links bellow to upgrade.',
+            updlangmaj: 'An update is available for one or more languages of the TW Collections script.<BR>Clic on the links bellow to upgrade.',
             updscript: 'An update is available for the script TW Collections<br>Upgrade ?',
             upderror: 'Unable to upgrade, you should install the script or language manually'
           },
@@ -754,12 +756,12 @@
       },
       translate: {
         open: function () {
-          var txtArea = '<div style="width:650px;margin-left:15px;margin-top:20px;height:250px;font-size:16px;text-align:justify;padding-bottom:50px;">' + '<h4 style="margin-bottom:20px;"><center>The translation\'s system of the TW Collections script has changed</center></h4>' + "TW Collections script contains just the french and english languages, if you need a different translation you must install one of the script below and reload the TW page<BR><BR>" + "<div style='margin-left: 60px;overflow: auto; height: 165px;font-size:15px;'>";
+          var txtArea = '<div style="width:650px;margin-left:15px;margin-top:20px;height:250px;font-size:16px;text-align:justify;padding-bottom:50px;">' + '<h4 style="margin-bottom:20px;"><center>The translation\'s system of the TW Collections script has changed</center></h4>' + "TW Collections script contains just the french and english languages, if you need a different translation you must install one of the script below and reload the TW page<BR><BR>" + "<div style='margin-left:60px;overflow:auto;height:200px;font-size:15px;'>";
           var langPatchs = TWT.langPatchs;
           $.each(langPatchs, function (lang) {
             txtArea += "<a target='_blank' href='//greasyfork.org/scripts/" + langPatchs[lang].link + "'>" + langPatchs[lang].texte + " by " + langPatchs[lang].author + "</a><br>";
           });
-          txtArea += '</div><br>If you want to create your own translation, you can go to <a target="_blank" href="' + TWT.info.website + '"> the home page of the script</a> for more explanations</div>';
+          txtArea += '</div></div>';
           TWT.Options.Windows.activateTab('TabTranslate').$("div.tw2gui_window_content_pane").empty();
           TWT.Options.Windows.setTitle("Translations for TW Collections");
           TWT.Options.Windows.appendToContentPane(txtArea);
@@ -774,7 +776,7 @@
           var l0 = TWT.Options.createLanguage();
           var l1 = TWT.Options.getContent();
           var l2 = $('<div style="text-align:center;">').append(save_button.getMainDiv());
-          TWT.Options.Windows.appendToContentPane($('<div id="divopts" style="font-weight: bolder;width: 683px;left:10px;" class="daily_activity-list">').append(l0, l1, l2));
+          TWT.Options.Windows.appendToContentPane($('<div id="divopts" style="font-weight:bolder;width:683px;left:10px;" class="daily_activity-list">').append(l0, l1, l2));
           $("#divopts", TWT.Options.Windows.getMainDiv()).css("width: 674px;");
           TWT.Options.Windows.appendToContentPane(TWT.getDunMp());
           $(".fancytable div.trows div.tbody").css({
@@ -1010,38 +1012,40 @@
             }
           });
           /* init des items de sets manquants*/
-          var sets = west.storage.ItemSetManager._setArray.slice(0);
-          sets = TWT.MetaCol.sort(sets, "name");
-          for (var jj = 0; jj < sets.length; jj++) {
-            var set = sets[jj];
-            if (set.key.includes('friendship_set_'))
-              continue;
-            var items = set.getItems(),
-            detSet = [],
-            isFriend = 0;
-            for (var zz of items) {
-              var item = ItemManager.getByBaseId(zz);
-              if (!isDefined(item)) {
-                ErrorLog.log("Erreur sur " + zz + " " + set.name);
-              } else {
-                if (item.short.includes('friendset_') || [1008].includes(zz)) {
-                  isFriend = 1;
-                  break;
+          $.getScript('//the-west-scripts.github.io/The-West-Essentials/files/newSets.js', function () {
+            var sets = west.storage.ItemSetManager._setArray.slice(0);
+            sets = TWT.MetaCol.sort(sets, "name");
+            for (var jj = 0; jj < sets.length; jj++) {
+              var set = sets[jj];
+              if (forbid.sets.includes(set.key) || set.key.includes('friendship_set_'))
+                continue;
+              var items = set.getItems(),
+              detSet = [],
+              isFriend = 0;
+              for (var zz of items) {
+                var item = ItemManager.getByBaseId(zz);
+                if (!isDefined(item)) {
+                  ErrorLog.log("Erreur sur " + zz + " " + set.name);
                 } else {
-                  var weared = Wear.carries(zz),
-                  bagItem = Bag.getItemsIdsByBaseItemId(zz);
-                  if (!weared && !bagItem[0]) {
-                    detSet.push(item.name);
-                    TWT.MetaCol.setsProgress[item.name] = item.image;
+                  if (item.short.includes('friendset_') || forbid.IDs.includes(zz)) {
+                    isFriend = 1;
+                    break;
+                  } else {
+                    var weared = Wear.carries(zz),
+                    bagItem = Bag.getItemsIdsByBaseItemId(zz);
+                    if (!weared && !bagItem[0]) {
+                      detSet.push(item.name);
+                      TWT.MetaCol.setsProgress[item.name] = item.image;
+                    }
                   }
                 }
               }
+              if (detSet.length > 0 && !isFriend) {
+                TWT.MetaCol.setCol.push([set.name, detSet]);
+                TWT.MetaCol.groupSet[set.name] = detSet;
+              }
             }
-            if (detSet.length > 0 && !isFriend) {
-              TWT.MetaCol.setCol.push([set.name, detSet]);
-              TWT.MetaCol.groupSet[set.name] = detSet;
-            }
-          }
+          });
         }
       },
       isFinished: function (name) {
@@ -2244,7 +2248,7 @@
     var intVal = setInterval(function () {
       if (window.scriptUp) {
         var ti = TWT.info;
-        scriptUp.c('TWT', ti.version, ti.name, '', ti.website, ti.lang);
+        scriptUp.c('TWT', ti.version, ti.name, ti.lang);
         clearInterval(intVal);
       }
     }, 2000);
