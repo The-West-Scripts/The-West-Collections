@@ -5,9 +5,10 @@
 // @include     https://*.the-west.*/game.php*
 // @exclude     https://classic.the-west.net*
 // @author      Dun (updated by Tom Robert)
-// @version     1.4.7
+// @version     1.4.7.1
 // @homepage https://github.com/The-West-Scripts/The-West-Collections
 // @supportURL https://github.com/The-West-Scripts/The-West-Collections/issues
+// @history 1.4.7.1 CollectionsHandler.inject fixed, newItems filter for TW Essentials, TW v2.255
 // @history 1.4.6.9 bankfees removed, old updater removed, item sets selectbox improved, bugfixes, TW v2.241
 // @history 1.4.6.8 greasyfork fix
 // @history 1.4.6.5 bugfix, TW v2.97
@@ -75,7 +76,7 @@
     info: {
       name: 'TW-Collections',
       lang: 'en',
-      version: '1.4.7',
+      version: '1.4.7.1',
       min_gameversion: '2.0',
       max_gameversion: Game.version.toString(),
       idscript: '1670',
@@ -96,7 +97,7 @@
     images: {
       cup: "images/icons/achv_points.png",
       logout: "data:image/jpg;base64,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",
-      twdb_iconNew: "data:image/png;base64,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",
+      twx_iconNew: "data:image/png;base64,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",
       traderImg: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wAARCAAUABQDASIAAhEBAxEB/8QAGAABAQEBAQAAAAAAAAAAAAAAAAgGBAf/xAAoEAACAQMEAgEDBQAAAAAAAAABAgMEBQYABxESEyIhCBRBMTIzQkP/xAAXAQEBAQEAAAAAAAAAAAAAAAAFAwQH/8QAJREBAAIBAwQBBQEAAAAAAAAAAQIRAwAEURITITFhIjJBkaGx/9oADAMBAAIRAxEAPwCzsr3ZqcwrZ446eojpYzykVNTuY2JcIZZCrKSo/cQG9V9jyCNZbNZd1dvJhd7NFEQ0qSwLJP4lVPcPCrop5Kle3aRf7AN0AZxg9uMvXHN0qy03ZJqWakeOZZJPGfNG0aq0kRZgU6NCyOAOP4jyew45MUxHJtsIb/kWZbwPlEF9t1PLRQxUJhWCKPvKKmY9zxKxk95OVAABJYk64jk3O7nMg3RJtFOktDgugWxG3jzty5p9yeVmEgOmKfcvsvzVfCJ/lGbOfUfie5O3tBmFROszVSc+V06s3Hx7KRyrA8gr+CCNNTz9PuN33IcBlym3xVTU94vVdcKX7qDxyeGadpI2dQB1ZkZXK8AgvwfkHTT+HsyxRcmSpUWeqdIY9/vSAGDqOb9/PrXoO82DYxJFBf5rYGqFk7xOsjRtFIVA7o6FXRuPUlWHK/B5HxrB2/aDF83ySltuZVtzutGKtpoqGuuLyQRuSf8AM+sgHYhVkDhQfUDTTRnZwu5hLpLTjhK1XeqbiUT19P8ATz+/zzqobJYLVZLelut1KEiT9Ofkk/kk/knTTTV4gxF0urFo8Gv/2Q=="
     },
     menu_callback: {
@@ -227,9 +228,9 @@
               }
             },
             twdbadds: {
-              title: 'Add-on Clothcalc',
+              title: 'Add-on TW Essentials',
               options: {
-                filterBuyMarket: 'Filtre dans le march&eacute; pour n\'afficher que les items manquants <a target=\'_blank\' href="//tw-db.info/?strana=userscript">(twdb add)</a>'
+                filterBuyMarket: 'Filtre dans le march&eacute; pour n\'afficher que les items manquants <a target=\'_blank\' href="//the-west-scripts.github.io/The-West-Essentials/">(TW Essentials add)</a>'
               }
             }
           },
@@ -386,9 +387,9 @@
               }
             },
             twdbadds: {
-              title: 'Clothcalc Add-on',
+              title: 'TW Essentials Add-on',
               options: {
-                filterBuyMarket: 'Market filter : show only marked missing items <a target=\'_blank\' href="//tw-db.info/?strana=userscript">(twdb add)</a>'
+                filterBuyMarket: 'Market filter: show only marked missing items <a target=\'_blank\' href="//the-west-scripts.github.io/The-West-Essentials/">(TW Essentials add)</a>'
               }
             }
           },
@@ -584,20 +585,9 @@
             loading = false;
           } else if (isDefined(ItemManager.initialized) && !ItemManager.initialized) {
             loading = false;
-          } else if (isDefined(window.TWDB)) {
-            /* null != TWDB && 'undefined' != typeof TWDB) {*/
-            if (!window.TWDB.ClothCalc.ready) {
-              loading = false;
-              timeout++;
-              if (timeout > 20) {
-                ErrorLog.log('Stop interval, chargement de TWDB non possible ?');
-                TWT.isTWDBHere = true;
-                loading = true;
-              }
-            } else {
-              TWT.isTWDBHere = true;
-              loading = true;
-            }
+          } else if (isDefined(window.TWX)) {
+            TWT.isTWXHere = true;
+            loading = true;
           } else
             loading = true;
           if (loading) {
@@ -717,7 +707,7 @@
         }
         if (TWT.Settings.isChecked('miscellaneous.logout'))
           TWT.Logout.create();
-        if ((!TWT.MetaCol.finished) || TWT.isTWDBHere) {
+        if ((!TWT.MetaCol.finished) || TWT.isTWXHere) {
           TWT.Market.initListener();
           if (TWT.Settings.isChecked("twdbadds.filterBuyMarket") || TWT.Settings.isChecked('collection.filterMarket')) {
             TWT.Market.init();
@@ -791,7 +781,7 @@
           $.each(TWT.LANG.Options.checkbox_text[key].options, function (i) {
             if (!['lang', 'showFees'].includes(i)) {
               var checkB;
-              if ((TWT.MetaCol.finished && (key == 'collection' || i == 'listNeeded')) || ((key == 'twdbadds') && !TWT.isTWDBHere)) {
+              if ((TWT.MetaCol.finished && (key == 'collection' || i == 'listNeeded')) || ((key == 'twdbadds') && !TWT.isTWXHere)) {
                 checkB = $("<span title='" + TWT.LANG.Options.message.indispo + "' style='color: #808080;font-style: italic;font-size:11pt;padding-left:10px;'>").append(TWT.LANG.Options.checkbox_text[key].options[i]);
               } else {
                 checkB = new west.gui.Checkbox().setTitle(TWT.LANG.Options.checkbox_text[key].options[i]).setLabel("<span style='font-size:11pt;padding-left:10px;'>" + TWT.LANG.Options.checkbox_text[key].options[i] + "</span>").setSelected(TWT.Settings.isChecked(key + '.' + i)).setId('setting_' + key + '_' + i).getMainDiv();
@@ -1483,7 +1473,7 @@
             return divMain;
           };
           var modifiedFunc = west.game.shop.item.view.prototype.render.toString();
-          modifiedFunc = modifiedFunc.toString().replace('return $item;', "$item.append(that.injectTWTips($item)); return $item;");
+          modifiedFunc = modifiedFunc.toString().replace('return $item;', "$item.append(this.injectTWTips($item)); return $item;");
           eval("west.game.shop.item.view.prototype.render=" + modifiedFunc);
         },
         injectSell: function () {
@@ -1493,34 +1483,30 @@
             }
             var name = that.obj.name.trim();
             that.divMain.find('.TWTSuccessSell').remove();
-            if (!TWT.MetaCol.isFinished(name)) {
-              that.divMain.append('<img  class="TWTSuccessSell"' + 'style="' + TWT.css.styleT + '" title="' + TWT.LANG.collection.patchsell.title + TWT.MetaCol.getBuyItems(name, true) + '"' + ' src="' + TWT.images.cup + '">');
-            }
-            if (TWT.MetaCol.dirty) {
+            if (!TWT.MetaCol.isFinished(name))
+              that.divMain.append('<img class="TWTSuccessSell"' + 'style="' + TWT.css.styleT + '" title="' + TWT.LANG.collection.patchsell.title + TWT.MetaCol.getBuyItems(name, true) + '"' + ' src="' + TWT.images.cup + '">');
+            if (TWT.MetaCol.dirty)
               TWT.CollectionsHandler.refresh();
-            }
             return that.divMain;
           };
           var modifiedFunc = tw2widget.InventoryItem.prototype.getMainDiv.toString();
           modifiedFunc = modifiedFunc.replace('return this.divMain;', "; this.injectSell(this); return this.divMain;");
-          eval("tw2widget['InventoryItem'].prototype.getMainDiv = " + modifiedFunc);
+          eval("tw2widget.InventoryItem.prototype.getMainDiv = " + modifiedFunc);
         },
         injectMarket: function () {
           try {
             MarketWindow.injectTWTTips = function (obj) {
-              if (TWT.MetaCol.dirty) {
+              if (TWT.MetaCol.dirty)
                 TWT.CollectionsHandler.refresh();
-              }
               var divMain = '';
-              if (TWT.MetaCol.shouldBuy(obj.name.trim())) {
-                divMain = '<img  class="TWTSuccess" style="' + TWT.css.style + '" title="' + TWT.LANG.collection.patchsell.title + ' ' + TWT.MetaCol.getBuyItems(obj.name, false) + '"' + ' src="' + TWT.images.cup + '">';
-              }
+              if (TWT.MetaCol.shouldBuy(obj.name.trim()))
+                divMain = '<img class="TWTSuccess" style="' + TWT.css.style + '" title="' + TWT.LANG.collection.patchsell.title + ' ' + TWT.MetaCol.getBuyItems(obj.name, false) + '"' + ' src="' + TWT.images.cup + '">';
               return divMain;
             };
-            var modifiedFunc = MarketWindow.getClearName.toString();
-            /*tw2widget.TraderItem.prototype.getMainDiv*/
-            modifiedFunc = modifiedFunc.replace(/return/g, 'return this.injectTWTTips(obj)+');
-            eval('MarketWindow.getClearName=' + modifiedFunc);
+            MarketWindow.getClearName_TWT = MarketWindow.getClearName_TWT || MarketWindow.getClearName;
+            MarketWindow.getClearName = function (obj) {
+              return this.injectTWTTips(obj) + MarketWindow.getClearName_TWT.call(this, obj);
+            };
           } catch (e) {
             ErrorLog.log(e, 'Erreur inject market');
             throw (e);
@@ -1537,9 +1523,9 @@
                     $('p.accordion_contentRow:not(:has(.TWTSuccess))', MarketWindow.DOM).css('display', 'none');
                   }
                 }
-                if (TWT.isTWDBHere && TWT.Settings.isChecked("twdbadds.filterBuyMarket")) {
+                if (TWT.isTWXHere && TWT.Settings.isChecked("twdbadds.filterBuyMarket")) {
                   if ($('#buyFilterIsCollect2.tw2gui_checkbox_checked', MarketWindow.DOM).length > 0) {
-                    $('p.accordion_contentRow:not(:has(.TWDBcollector)):not(:has(.TWDBbuyTip))', MarketWindow.DOM).css('display', 'none');
+                    $('p.accordion_contentRow:not(:has(.TWX_ItemNew))', MarketWindow.DOM).css('display', 'none');
                   }
                 }
               } catch (e) {
@@ -1567,19 +1553,17 @@
         },
         injectTrader: function () {
           tw2widget.TraderItem.prototype.injectTWTips = function () {
-            if (TWT.MetaCol.dirty) {
+            if (TWT.MetaCol.dirty)
               TWT.CollectionsHandler.refresh();
-            }
             var name = this.obj.name.trim();
             this.divMain.find(".TWTSuccess").remove();
-            if (TWT.MetaCol.shouldBuy(name)) {
-              this.divMain.append('<img  class="TWTSuccess"' + 'style="' + TWT.css.styleT + '" title="' + TWT.LANG.collection.patchsell.title + TWT.MetaCol.getBuyItems(name, true) + '"' + ' src="' + TWT.images.cup + '">');
-            }
+            if (TWT.MetaCol.shouldBuy(name))
+              this.divMain.append('<img class="TWTSuccess"' + 'style="' + TWT.css.styleT + '" title="' + TWT.LANG.collection.patchsell.title + TWT.MetaCol.getBuyItems(name, true) + '"' + ' src="' + TWT.images.cup + '">');
             return this.divMain;
           };
           var modifiedFunc = tw2widget.TraderItem.prototype.getMainDiv.toString();
           modifiedFunc = modifiedFunc.replace('return this.divMain;', "this.divMain = this.injectTWTips(); return this.divMain;");
-          eval("tw2widget['TraderItem'].prototype.getMainDiv =" + modifiedFunc);
+          eval("tw2widget.TraderItem.prototype.getMainDiv =" + modifiedFunc);
         },
         injectCraftFilterUpdate: function () {
           Crafting.updateResources = function () {
@@ -1707,16 +1691,16 @@
             $('.searchbox').append(TWT.Market.insertedCB.getMainDiv());
           }
         }
-        if (TWT.isTWDBHere && TWT.Settings.isChecked("twdbadds.filterBuyMarket")) {
+        if (TWT.isTWXHere && TWT.Settings.isChecked("twdbadds.filterBuyMarket")) {
           if ($('#buyFilterIsCollect2').length == 0) {
             $('.searchbox').css('margin-bottom', '5px');
-            TWT.Market.insertedCB2 = new west.gui.Checkbox('<img src="data:image/png;base64,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"' + ' style="width:18px;height:18px">' + TWT.LANG.twdbadds.buyFilterLabel, false, function () {
+            TWT.Market.insertedCB2 = new west.gui.Checkbox('<img src="' + TWT.images.twx_iconNew + '"' + ' style="width:18px;height:18px">' + TWT.LANG.twdbadds.buyFilterLabel, false, function () {
               if (this.isSelected()) {
                 if (isDefined(TWT.Market.insertedCB))
                   TWT.Market.insertedCB.setSelected(false);
-                $('p.accordion_contentRow:not(:has(.TWDBcollector)):not(:has(.TWDBbuyTip))', MarketWindow.DOM).css('display', 'none');
+                $('p.accordion_contentRow:not(:has(.TWX_ItemNew))', MarketWindow.DOM).css('display', 'none');
               } else {
-                $('p.accordion_contentRow:not(:has(.TWDBcollector)):not(:has(.TWDBbuyTip))', MarketWindow.DOM).css('display', '');
+                $('p.accordion_contentRow:not(:has(.TWX_ItemNew))', MarketWindow.DOM).css('display', '');
               }
             });
             TWT.Market.insertedCB2.setSelected(false);
@@ -1805,11 +1789,11 @@
       init: function () {
         EventHandler.listen('inventory_dun_changed', TWT.CollectionsHandler.callRefresh);
         TWT.Injecteur.init('collection.patchmarket', 'MarketWindow.getClearName', TWT.Injecteur.injectedMethods.injectMarket);
-        TWT.Injecteur.init('collection.patchsell', 'tw2widget["InventoryItem"].prototype.getMainDiv', TWT.Injecteur.injectedMethods.injectSell);
+        TWT.Injecteur.init('collection.patchsell', 'tw2widget.InventoryItem.prototype.getMainDiv', TWT.Injecteur.injectedMethods.injectSell);
         TWT.Injecteur.init('collection.patchtbagupdate', 'Bag.updateChanges', TWT.Injecteur.injectedMethods.injectBagUpdate);
         TWT.Injecteur.inject('collection.patchtbagupdate');
         TWT.Injecteur.init('collection.patchitemtrader', 'west.game.shop.item.view.prototype.render', TWT.Injecteur.injectedMethods.injectItemTrader);
-        TWT.Injecteur.init('collection.patchtrader', 'tw2widget["TraderItem"].prototype.getMainDiv', TWT.Injecteur.injectedMethods.injectTrader);
+        TWT.Injecteur.init('collection.patchtrader', 'tw2widget.TraderItem.prototype.getMainDiv', TWT.Injecteur.injectedMethods.injectTrader);
       },
       refresh: function () {
         var items = Bag.items_by_id;
@@ -1837,25 +1821,27 @@
         try {
           TWT.MetaCol.init();
           if (!TWT.MetaCol.finished) {
-            if (TWT.MetaCol.ready) {
-              if (TWT.Settings.isChecked('collection.patchtrader')) {
-                TWT.Injecteur.inject('collection.patchtrader');
-                TWT.Injecteur.inject('collection.patchitemtrader');
+            var setVal = setInterval(function () {
+              if (TWT.MetaCol.ready) {
+                clearInterval(setVal);
+                if (TWT.Settings.isChecked('collection.patchtrader')) {
+                  TWT.Injecteur.inject('collection.patchtrader');
+                  TWT.Injecteur.inject('collection.patchitemtrader');
+                }
+                if (TWT.Settings.isChecked('collection.patchsell')) {
+                  TWT.Injecteur.inject('collection.patchsell');
+                }
+                if (TWT.Settings.isChecked('collection.patchmarket')) {
+                  TWT.Injecteur.inject('collection.patchmarket');
+                }
               }
-              if (TWT.Settings.isChecked('collection.patchsell')) {
-                TWT.Injecteur.inject('collection.patchsell');
-              }
-              if (TWT.Settings.isChecked('collection.patchmarket')) {
-                TWT.Injecteur.inject('collection.patchmarket');
-              }
-            }
+            }, 500);
           }
           return true;
         } catch (e) {
           ErrorLog.log("Erreur Injection des meacute;thodes collections ", e);
           this.erreur = e;
-          console.log("TWT : Erreur injection collections");
-          console.log(e);
+          console.log("TWT : Erreur injection collections", e);
         }
       }
     },
